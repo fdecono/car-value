@@ -8,7 +8,8 @@ import {
   Query,
   Patch,
   NotFoundException,
-  Session
+  Session,
+  UseInterceptors
 } from '@nestjs/common';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
@@ -16,10 +17,13 @@ import { UsersService } from './users.service';
 import { Serialize } from '../interceptors/serialize.interceptor';
 import { UserDto } from './dtos/user.dto';
 import { AuthService } from './auth.service';
-import { setEngine } from 'crypto';
+import { CurrentUser } from './decorators/current-user.decorator';
+import { CurrentUserInterceptor } from './interceptors/current-user.interceptor';
+import { User } from './user.entity';
 
 @Controller('auth')
 @Serialize(UserDto) //placing it here, it applies to all handlers
+@UseInterceptors(CurrentUserInterceptor)
 export class UsersController {
   constructor(
     private usersService: UsersService,
@@ -36,12 +40,17 @@ export class UsersController {
   //   return session.color;
   // }
 
+  // @Get('/whoami')
+  // whoAmI(@Session() session: any) {
+  //   if (!session.userId) {
+  //     throw new NotFoundException('You are not logged in');
+  //   }
+  //   return this.usersService.findOne(session.userId);
+  // }
+
   @Get('/whoami')
-  whoAmI(@Session() session: any) {
-    if (!session.userId) {
-      throw new NotFoundException('You are not logged in');
-    }
-    return this.usersService.findOne(session.userId);
+  whoAmI(@CurrentUser() user: User) {
+    return user;
   }
 
   @Post('/signout')
