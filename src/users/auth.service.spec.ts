@@ -3,27 +3,31 @@ import { AuthService } from "./auth.service";
 import { UsersService } from "./users.service";
 import { User } from "./user.entity";
 
-it('can create an instance of auth service', async () => {
-  // Create a fake copy of users service:
-  // Partial<UsersService> means we are asking TS to validate the methods we are adding
-  // and allowing it to be a partial version of UsersService
-  const fakeUsersService: Partial<UsersService> = {
-    find: () => Promise.resolve([]),
-    create: (email: string, password: string) => Promise.resolve({id: 1, email, password} as User)
-  };
+describe('AuthService', () => {
+  let service: AuthService;
 
-  //basically, we're creating a DI container:
-  const module = await Test.createTestingModule({
-    providers: [
-      AuthService,
-      {
-        provide: UsersService, //when something asks for UsersService
-        useValue: fakeUsersService //this value will be used to respond to that call
-      }
-    ]
-  }).compile();
+  beforeEach(async () => {
+    const fakeUsersService: Partial<UsersService> = {
+      find: () => Promise.resolve([]),
+      create: (email: string, password: string) => Promise.resolve({id: 1, email, password} as User)
+    };
 
-  const service = module.get(AuthService);
+    const module = await Test.createTestingModule({
+      providers: [
+        AuthService,
+        {
+          provide: UsersService,
+          useValue: fakeUsersService
+        }
+      ]
+    }).compile();
 
-  expect(service).toBeDefined();
+    //as 'service' is in another scope than 'it', I declare it above, and here I just
+    //assign a new value to it
+    service = module.get(AuthService);
+  });
+
+  it('can create an instance of auth service', async () => {
+    expect(service).toBeDefined();
+  });
 });
