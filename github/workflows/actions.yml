@@ -1,0 +1,25 @@
+name: Run Specs on Push
+
+on:
+  push:
+      branches:
+        - master
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 14
+
+      - name: Install Dependencies
+        uses: npm Install
+
+      - name: Run Tests
+        uses: npm test
