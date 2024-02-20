@@ -1,80 +1,25 @@
-name: Run Specs on Push
+name: Run Specs
 
 on:
   push:
-      branches:
-        - master
+    branches:
+      - master
 
 jobs:
-  tests:
+  specs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 14
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 21
 
-      - name: Install Dependencies
-        uses: npm Install
+    - name: Install dependencies
+      run: npm install
 
-      - name: Run Tests
-        uses: npm test
-
-on:
-  pull_request:
-      branches:
-        - master
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Repository
-        run: actions/checkout@v2
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 14
-
-      - name: Install Dependencies
-        uses: npm Install
-
-      - name: Run Tests
-        uses: npm test
-
-  status-check:
-    - needs: test
-    - runs-on: ubuntu-latest
-
-    steps:
-      - name: Check Test Status
-        uses: actions/github-scripts@v6
-        with:
-          script: |
-            const response = await github.pulls.listCommits({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.payload.pull_request.number,
-            });
-
-            const lastCommit = response.data[response.data.length - 1].sha;
-
-            const checks = await github.checks.listForRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: lastCommit,
-            });
-
-            const testsPassed = check.data.check_runs.every((check) => check.conclusion === 'success');
-
-            if (!testPassed) {
-              core.setFailed('Tests failed. Please fix the issues before merging');
-            }
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Run specs
+      run: npm run test
